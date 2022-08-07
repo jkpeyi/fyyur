@@ -4,7 +4,7 @@
 # Tout marche à présent !
 
 NB:
-- Créer une base de données ffyur ou autre tels spécifiés dans le fichier *config.py*
+- Créer une base de données ffyur ou autre et le spécifier dans le fichier *config.py*
 - Exécuter les migrations : flask db init ; flask db migrate; flask db upgrade;
 
 
