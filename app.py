@@ -54,7 +54,6 @@ def venues():
     #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
     # retrieve venues group by state
     venues = Venue.query.all()
-   
 
     data = []
     for venue in venues:
@@ -108,8 +107,22 @@ def show_venue(venue_id):
     # TODO: replace with real venue data from the venues table, using venue_id
     venue = Venue.query.get(venue_id)
     #filter venue.shows to only shows that are upcoming
-    upcoming_shows = [show for show in venue.shows if show.start_time > datetime.now()]
-    past_shows = [show for show in venue.shows if show.start_time < datetime.now()]
+
+    past_shows_query = db.session.query(Show).join(Venue).filter(Show.venue_id==venue_id).filter(Show.start_time < datetime.now()).all()
+
+    past_shows = [{"artist_id": show.artist_id,
+            "artist_name": show.artist.name,
+            "artist_image_link": show.artist.image_link,
+            "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')} 
+            for show in past_shows_query]
+
+    upcoming_shows_query = db.session.query(Show).join(Venue).filter(Show.venue_id==venue_id).filter(Show.start_time > datetime.now()).all()
+    upcoming_shows = [
+        {"artist_id": show.artist_id,
+        "artist_name": show.artist.name,
+        "artist_image_link": show.artist.image_link,
+        "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')}
+        for show in upcoming_shows_query]
     
 
     result={
@@ -125,19 +138,8 @@ def show_venue(venue_id):
         "seeking_talent": venue.seeking_talent,
         "seeking_description": venue.seeking_description,
         "image_link": venue.image_link,
-        "past_shows": [{
-            "artist_id": show.artist_id,
-            "artist_name": show.artist.name,
-            "artist_image_link": show.artist.image_link,
-            "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-        } for show in past_shows],
-        "upcoming_shows": [{
-            "artist_id": show.artist_id,
-            "artist_name": show.artist.name,
-            "artist_image_link": show.artist.image_link,
-            "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-
-        } for show in upcoming_shows],
+        "past_shows": past_shows,
+        "upcoming_shows": upcoming_shows,
         "past_shows_count": len(past_shows),
         "upcoming_shows_count": len(upcoming_shows)
     }
@@ -250,10 +252,10 @@ def create_venue_submission():
         db.session.add(venue)
         db.session.commit()
         flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    except:
+    except Exception as e:
         db.session.rollback()
         flash('An error occurred. Venue ' +
-              request.form['name'] + ' could not be listed.')
+              request.form['name'] + ' could not be listed.'+str(e))
     finally:
         db.session.close()
     return render_template('pages/home.html')
@@ -323,8 +325,23 @@ def show_artist(artist_id):
     
     artist = Artist.query.get(artist_id)
     # filter artist.shows to only shows that are upcoming
-    artist.upcoming_shows = [show for show in artist.shows if show.start_time > datetime.now()]
-    artist.past_shows = [show for show in artist.shows if show.start_time < datetime.now()]
+    past_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show.start_time<datetime.now()).all()
+    past_shows = [{
+        "venue_id": show.venue_id,
+        "venue_name": show.venue.name,
+        "venue_image_link": show.venue.image_link,
+        "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+    } for show in past_shows_query]
+
+    upcoming_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show.start_time>datetime.now()).all()
+    upcoming_shows = [{
+        "venue_id": show.venue_id,
+        "venue_name": show.venue.name,
+        "venue_image_link": show.venue.image_link,
+        "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+
+    } for show in upcoming_shows_query]
+
     data= {
         "id": artist.id,
         "name": artist.name,
@@ -337,20 +354,10 @@ def show_artist(artist_id):
         "seeking_venue": artist.seeking_venue,
         "seeking_description": artist.seeking_description,
         "image_link": artist.image_link,
-        "past_shows": [{
-            "venue_id": show.venue_id,
-            "venue_name": show.venue.name,
-            "venue_image_link": show.venue.image_link,
-            "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-        } for show in artist.past_shows],
-        "upcoming_shows": [{
-            "venue_id": show.venue_id,
-            "venue_name": show.venue.name,
-            "venue_image_link": show.venue.image_link,
-            "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-        } for show in artist.upcoming_shows],
-        "past_shows_count": len(artist.past_shows),
-        "upcoming_shows_count": len(artist.upcoming_shows),
+        "past_shows": past_shows,
+        "upcoming_shows": upcoming_shows,
+        "past_shows_count": len(past_shows),
+        "upcoming_shows_count": len(upcoming_shows),
     }
     return render_template('pages/show_artist.html', artist=data)
 
@@ -494,10 +501,10 @@ def create_artist_submission():
         db.session.commit()
         # on successful db insert, flash success
         flash('Artist ' + artist.name + ' was successfully listed!')
-    except:
+    except Exception as e:
         db.session.rollback()
         flash('An error occurred. Artist ' +
-              artist.name + ' could not be listed.')
+              artist.name + ' could not be listed.'+str(e))
     finally:
         db.session.close()
     return render_template('pages/home.html')
