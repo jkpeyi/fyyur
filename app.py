@@ -538,6 +538,10 @@ def render_shows_form(artist_id, venue_id):
     form.venue_id.data= venue_id
     return render_template('forms/new_show.html', form=form)
 
+@app.route('/shows/<int:artist_id>/<int:venue_id>', methods=['POST'])
+def create_show_submission2(artist_id, venue_id):
+    return create_show_submission()
+
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
 
