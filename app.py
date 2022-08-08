@@ -298,6 +298,7 @@ def search_artists():
     # search for "band" should return "The Wild Sax Band".
 
     search_term = request.form.get('search_term', '')
+    venue_id= request.form.get('venue_id', 0)
     search_result = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
 
     result={
@@ -317,7 +318,7 @@ def search_artists():
             "num_upcoming_shows": 0,
         }]
     }
-    return render_template('pages/search_artists.html', results=result, search_term=request.form.get('search_term', ''))
+    return render_template('pages/search_artists.html', results=result, search_term=request.form.get('search_term', ''), venue_id=venue_id)
 
 
 @app.route('/artists/<int:artist_id>')
@@ -528,6 +529,14 @@ def create_shows():
     form = ShowForm()
     return render_template('forms/new_show.html', form=form)
 
+
+#search an artist from a venue page and choose it for a show
+@app.route('/shows/<int:artist_id>/<int:venue_id>')
+def render_shows_form(artist_id, venue_id):
+    form = ShowForm()
+    form.artist_id.data=artist_id
+    form.venue_id.data= venue_id
+    return render_template('forms/new_show.html', form=form)
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():

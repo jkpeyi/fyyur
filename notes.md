@@ -3,6 +3,10 @@
 
 # Tout marche à présent !
 
+**Dans cette version**
+# Les champs contacts sont définies sur numeric et sont obligatoires en base.
+# On peut réchercher un artiste à partir de la page Venue, et le sélectionner pour créer un Show
+# Tout marche à présent !
 NB:
 - Créer une base de données ffyur ou autre et le spécifier dans le fichier *config.py*
 - Exécuter les migrations : flask db init ; flask db migrate; flask db upgrade;

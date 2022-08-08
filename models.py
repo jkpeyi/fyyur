@@ -13,7 +13,7 @@ class Venue(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
+    phone = db.Column(db.String(120), nullable=False)
     image_link = db.Column(db.String(500), nullable=False, default='https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60')
     facebook_link = db.Column(db.String(500))
     website_link = db.Column(db.String(500))
@@ -36,7 +36,7 @@ class Artist(db.Model):
     name = db.Column(db.String)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
+    phone = db.Column(db.String(120), nullable=False)
     genres = db.Column(db.ARRAY(db.String()))
     image_link = db.Column(db.String(
         500), default='https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80')
